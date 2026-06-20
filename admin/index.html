@@ -2,15 +2,785 @@
 <html>
 <head>
     <meta charset="UTF-8">
-    <title>Hello World!</title>
+    <title>CIR Admin</title>
     <meta http-equiv="Content-Security-Policy" content="script-src 'self' 'unsafe-inline';" />
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+            background: #f1f5f9;
+            color: #1e293b;
+            overflow-x: hidden;
+        }
+
+        .container {
+            display: grid;
+            grid-template-columns: 280px 1fr;
+            min-height: 100vh;
+        }
+
+        .sidebar {
+            background: linear-gradient(135deg, #0f172a 0%, #0a3e4a 100%);
+            color: white;
+            padding: 24px;
+            overflow-y: auto;
+            border-right: 1px solid rgba(255,255,255,0.1);
+        }
+
+        .sidebar-logo {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            margin-bottom: 32px;
+        }
+
+        .sidebar-logo-icon {
+            width: 40px;
+            height: 40px;
+            background: linear-gradient(135deg, #21d4b4 0%, #10b981 100%);
+            border-radius: 12px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 20px;
+        }
+
+        .sidebar-logo-text h2 {
+            font-size: 18px;
+            font-weight: 900;
+            margin: 0;
+        }
+
+        .sidebar-logo-text p {
+            font-size: 9px;
+            opacity: 0.7;
+            margin: 2px 0 0 0;
+            text-transform: uppercase;
+            letter-spacing: 0.1em;
+        }
+
+        .sidebar-nav {
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+            margin-bottom: 24px;
+        }
+
+        .sidebar-link {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            padding: 12px 16px;
+            border-radius: 12px;
+            cursor: pointer;
+            transition: all 0.3s;
+            font-size: 14px;
+            color: rgba(255,255,255,0.7);
+            text-decoration: none;
+            border: none;
+            background: none;
+        }
+
+        .sidebar-link:hover {
+            background: rgba(255,255,255,0.1);
+            color: white;
+        }
+
+        .sidebar-link.active {
+            background: rgba(33,212,180,0.2);
+            color: #21d4b4;
+            border-left: 3px solid #21d4b4;
+            padding-left: 13px;
+        }
+
+        .sidebar-link svg {
+            width: 20px;
+            height: 20px;
+            flex-shrink: 0;
+        }
+
+        .sidebar-divider {
+            height: 1px;
+            background: rgba(255,255,255,0.1);
+            margin: 16px 0;
+        }
+
+        .sidebar-section-title {
+            font-size: 10px;
+            font-weight: bold;
+            color: rgba(255,255,255,0.5);
+            text-transform: uppercase;
+            letter-spacing: 0.12em;
+            padding: 0 16px;
+            margin: 8px 0;
+        }
+
+        .sidebar-footer {
+            margin-top: auto;
+            padding-top: 16px;
+            border-top: 1px solid rgba(255,255,255,0.1);
+        }
+
+        .user-card {
+            background: rgba(255,255,255,0.05);
+            border: 1px solid rgba(255,255,255,0.1);
+            border-radius: 16px;
+            padding: 16px;
+            margin-bottom: 12px;
+        }
+
+        .user-card p {
+            margin: 4px 0;
+            font-size: 13px;
+        }
+
+        .user-card .user-name {
+            color: white;
+            font-weight: bold;
+            font-size: 14px;
+        }
+
+        .user-card .user-email {
+            color: rgba(255,255,255,0.6);
+            font-size: 12px;
+        }
+
+        .main-content {
+            display: flex;
+            flex-direction: column;
+            overflow: hidden;
+        }
+
+        .header {
+            background: white;
+            border-bottom: 1px solid #e2e8f0;
+            padding: 20px 32px;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.05);
+        }
+
+        .header-top {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            margin-bottom: 16px;
+        }
+
+        .header-title {
+            flex: 1;
+        }
+
+        .header-eyebrow {
+            font-size: 11px;
+            font-weight: bold;
+            color: #10b981;
+            text-transform: uppercase;
+            letter-spacing: 0.15em;
+            margin: 0;
+        }
+
+        .header-heading {
+            font-size: 28px;
+            font-weight: 900;
+            color: #0f172a;
+            margin: 8px 0 0 0;
+        }
+
+        .header-subheading {
+            font-size: 13px;
+            color: #64748b;
+            margin: 8px 0 0 0;
+        }
+
+        .header-actions {
+            display: flex;
+            gap: 12px;
+        }
+
+        .btn {
+            padding: 10px 20px;
+            border-radius: 12px;
+            border: none;
+            font-size: 13px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+
+        .btn-primary {
+            background: #10b981;
+            color: white;
+            box-shadow: 0 4px 6px rgba(16,185,129,0.2);
+        }
+
+        .btn-primary:hover {
+            background: #059669;
+        }
+
+        .btn-secondary {
+            background: white;
+            color: #0f172a;
+            border: 1px solid #e2e8f0;
+        }
+
+        .btn-secondary:hover {
+            background: #f8fafc;
+        }
+
+        .content {
+            flex: 1;
+            overflow-y: auto;
+            padding: 32px;
+        }
+
+        .section {
+            display: none;
+        }
+
+        .section.active {
+            display: block;
+        }
+
+        .card {
+            background: white;
+            border-radius: 16px;
+            border: 1px solid #e2e8f0;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.05);
+        }
+
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 20px;
+            margin-bottom: 32px;
+        }
+
+        .stat-card {
+            background: white;
+            border-radius: 16px;
+            padding: 24px;
+            border: 1px solid #e2e8f0;
+        }
+
+        .stat-label {
+            font-size: 12px;
+            font-weight: bold;
+            color: #64748b;
+            text-transform: uppercase;
+            letter-spacing: 0.1em;
+        }
+
+        .stat-value {
+            font-size: 32px;
+            font-weight: 900;
+            color: #0f172a;
+            margin: 12px 0;
+        }
+
+        .stat-meta {
+            font-size: 12px;
+            color: #64748b;
+        }
+
+        .table-wrapper {
+            background: white;
+            border-radius: 16px;
+            border: 1px solid #e2e8f0;
+            overflow: hidden;
+        }
+
+        .table-header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 24px;
+            border-bottom: 1px solid #e2e8f0;
+        }
+
+        .table-header h3 {
+            font-size: 18px;
+            font-weight: bold;
+            color: #0f172a;
+            margin: 0;
+        }
+
+        .table-header p {
+            font-size: 13px;
+            color: #64748b;
+            margin: 4px 0 0 0;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            font-size: 13px;
+        }
+
+        th {
+            background: #f8fafc;
+            padding: 16px 24px;
+            text-align: left;
+            font-weight: 600;
+            color: #64748b;
+            border-bottom: 1px solid #e2e8f0;
+        }
+
+        td {
+            padding: 16px 24px;
+            border-bottom: 1px solid #e2e8f0;
+        }
+
+        tr:last-child td {
+            border-bottom: none;
+        }
+
+        .modal-backdrop {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(0,0,0,0.5);
+            z-index: 1000;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .modal-backdrop.active {
+            display: flex;
+        }
+
+        .modal-content {
+            background: white;
+            border-radius: 20px;
+            padding: 32px;
+            width: 90%;
+            max-width: 600px;
+            max-height: 90vh;
+            overflow-y: auto;
+        }
+
+        .modal-header {
+            margin-bottom: 24px;
+        }
+
+        .modal-header h3 {
+            font-size: 22px;
+            font-weight: bold;
+            margin: 0;
+        }
+
+        .modal-header p {
+            font-size: 13px;
+            color: #64748b;
+            margin: 8px 0 0 0;
+        }
+
+        .form-group {
+            margin-bottom: 20px;
+        }
+
+        .form-group label {
+            display: block;
+            font-size: 13px;
+            font-weight: 600;
+            color: #0f172a;
+            margin-bottom: 8px;
+        }
+
+        .form-group input,
+        .form-group select,
+        .form-group textarea {
+            width: 100%;
+            padding: 10px 14px;
+            border: 1px solid #e2e8f0;
+            border-radius: 10px;
+            font-size: 13px;
+            font-family: inherit;
+        }
+
+        .form-group textarea {
+            resize: vertical;
+            min-height: 100px;
+        }
+
+        .form-actions {
+            display: flex;
+            gap: 12px;
+            justify-content: flex-end;
+            margin-top: 28px;
+        }
+
+        .badge {
+            display: inline-block;
+            padding: 4px 12px;
+            border-radius: 20px;
+            font-size: 11px;
+            font-weight: 600;
+        }
+
+        .badge-active {
+            background: #d1fae5;
+            color: #065f46;
+        }
+
+        .badge-inactive {
+            background: #fee2e2;
+            color: #7f1d1d;
+        }
+
+        .badge-resolved {
+            background: #d1fae5;
+            color: #065f46;
+        }
+
+        .badge-reported {
+            background: #fef3c7;
+            color: #92400e;
+        }
+
+        .badge-in-progress {
+            background: #dbeafe;
+            color: #0c4a6e;
+        }
+
+        .empty-state {
+            text-align: center;
+            padding: 48px 24px;
+        }
+
+        .empty-state svg {
+            width: 64px;
+            height: 64px;
+            opacity: 0.3;
+            margin-bottom: 16px;
+        }
+
+        .empty-state p {
+            color: #64748b;
+            font-size: 14px;
+        }
+
+        .spinner {
+            display: inline-block;
+            width: 20px;
+            height: 20px;
+            border: 3px solid rgba(16,185,129,0.2);
+            border-top-color: #10b981;
+            border-radius: 50%;
+            animation: spin 0.8s linear infinite;
+        }
+
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+
+        .grid-2 {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 20px;
+        }
+
+        @media (max-width: 768px) {
+            .container {
+                grid-template-columns: 1fr;
+            }
+
+            .sidebar {
+                position: fixed;
+                left: 0;
+                top: 0;
+                bottom: 0;
+                width: 280px;
+                z-index: 999;
+                transform: translateX(-100%);
+                transition: transform 0.3s;
+            }
+
+            .sidebar.open {
+                transform: translateX(0);
+            }
+
+            .header-actions {
+                flex-direction: column;
+            }
+
+            .grid-2 {
+                grid-template-columns: 1fr;
+            }
+        }
+    </style>
 </head>
 <body>
-    <h1>Hello World!</h1>
-    <p>
-        We are using Node.js <span id="node-version"></span>,
-        Chromium <span id="chrome-version"></span>,
-        and Electron <span id="electron-version"></span>.
-    </p>
+    <div class="container">
+        <aside class="sidebar">
+            <div class="sidebar-logo">
+                <div class="sidebar-logo-icon">📍</div>
+                <div class="sidebar-logo-text">
+                    <h2><span style="color: #21d4b4;">CIR</span></h2>
+                    <p>Admin Dashboard</p>
+                </div>
+            </div>
+
+            <nav class="sidebar-nav">
+                <button class="sidebar-link active" data-tab="dashboard">
+                    <svg fill="currentColor" viewBox="0 0 24 24"><path d="M3 13h2v8H3zm4-8h2v16H7zm4-2h2v18h-2zm4 4h2v14h-2zm4-2h2v16h-2z"/></svg>
+                    Dashboard
+                </button>
+                <button class="sidebar-link" data-tab="issues">
+                    <svg fill="currentColor" viewBox="0 0 24 24"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm1 15h-2v-2h2v2zm0-4h-2V7h2v6z"/></svg>
+                    Issues
+                </button>
+                <button class="sidebar-link" data-tab="workers">
+                    <svg fill="currentColor" viewBox="0 0 24 24"><path d="M12 12c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm0 2c-2.67 0-8 1.34-8 4v2h16v-2c0-2.66-5.33-4-8-4z"/></svg>
+                    Workers
+                </button>
+                <button class="sidebar-link" data-tab="departments">
+                    <svg fill="currentColor" viewBox="0 0 24 24"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-2 15h-2v-2h2v2zm0-4h-2V7h2v6zm4 4h-2v-2h2v2zm0-4h-2V7h2v6zm4 4h-2v-2h2v2zm0-4h-2V7h2v6z"/></svg>
+                    Departments
+                </button>
+            </nav>
+
+            <div class="sidebar-divider"></div>
+
+            <div class="sidebar-section-title">Account</div>
+            <nav class="sidebar-nav">
+                <button class="sidebar-link" data-tab="settings">
+                    <svg fill="currentColor" viewBox="0 0 24 24"><path d="M19.14 12.94c.04-.3.06-.61.06-.94 0-.32-.02-.64-.07-.94l2.03-1.58c.18-.14.23-.41.12-.62l-1.92-3.32c-.12-.22-.37-.29-.59-.22l-2.39.96c-.5-.38-1.03-.7-1.62-.94l-.36-2.54c-.04-.24-.24-.41-.48-.41h-3.84c-.24 0-.43.17-.47.41l-.36 2.54c-.59.24-1.13.57-1.62.94l-2.39-.96c-.22-.08-.47 0-.59.22L2.74 8.87c-.12.21-.08.48.1.62l2.03 1.58c-.05.3-.07.62-.07.94s.02.64.07.94l-2.03 1.58c-.18.14-.23.41-.12.62l1.92 3.32c.12.22.37.29.59.22l2.39-.96c.5.38 1.03.7 1.62.94l.36 2.54c.05.24.24.41.48.41h3.84c.24 0 .44-.17.47-.41l.36-2.54c.59-.24 1.13-.56 1.62-.94l2.39.96c.22.08.47 0 .59-.22l1.92-3.32c.12-.22.07-.48-.1-.62l-2.03-1.58zM12 15.6c-1.98 0-3.6-1.62-3.6-3.6s1.62-3.6 3.6-3.6 3.6 1.62 3.6 3.6-1.62 3.6-3.6 3.6z"/></svg>
+                    Settings
+                </button>
+            </nav>
+
+            <div class="sidebar-footer">
+                <div class="user-card">
+                    <p class="user-name">Administrator</p>
+                    <p class="user-email">admin@ciradmin.local</p>
+                </div>
+            </div>
+        </aside>
+
+        <div class="main-content">
+            <header class="header">
+                <div class="header-top">
+                    <div class="header-title">
+                        <p class="header-eyebrow">Municipal Manager</p>
+                        <h1 class="header-heading">Dashboard</h1>
+                    </div>
+                </div>
+            </header>
+
+            <main class="content">
+                <!-- DASHBOARD SECTION -->
+                <section class="section active" data-section="dashboard">
+                    <div class="stats-grid" id="statsGrid">
+                        <div class="stat-card">
+                            <p class="stat-label">Total Workers</p>
+                            <p class="stat-value">-</p>
+                            <p class="stat-meta">Active workers</p>
+                        </div>
+                        <div class="stat-card">
+                            <p class="stat-label">Departments</p>
+                            <p class="stat-value">-</p>
+                            <p class="stat-meta">Teams available</p>
+                        </div>
+                        <div class="stat-card">
+                            <p class="stat-label">Open Issues</p>
+                            <p class="stat-value">-</p>
+                            <p class="stat-meta">Resolved so far</p>
+                        </div>
+                        <div class="stat-card">
+                            <p class="stat-label">Overdue Issues</p>
+                            <p class="stat-value">-</p>
+                            <p class="stat-meta">Past deadline</p>
+                        </div>
+                    </div>
+
+                    <div class="grid-2">
+                        <div class="table-wrapper">
+                            <div class="table-header">
+                                <div>
+                                    <h3>Recent Issues</h3>
+                                    <p>Latest complaints in the system</p>
+                                </div>
+                            </div>
+                            <div id="recentIssuesContainer" style="padding: 24px;">
+                                <div class="empty-state"><p>Loading...</p></div>
+                            </div>
+                        </div>
+
+                        <div class="table-wrapper">
+                            <div class="table-header">
+                                <div>
+                                    <h3>Top Workers</h3>
+                                    <p>Based on assigned issues</p>
+                                </div>
+                            </div>
+                            <div id="topWorkersContainer" style="padding: 24px;">
+                                <div class="empty-state"><p>Loading...</p></div>
+                            </div>
+                        </div>
+                    </div>
+                </section>
+
+                <!-- WORKERS SECTION -->
+                <section class="section" data-section="workers">
+                    <div style="margin-bottom: 24px; display: flex; gap: 12px;">
+                        <input type="text" id="workerSearch" placeholder="Search workers..." style="flex: 1; padding: 10px 14px; border: 1px solid #e2e8f0; border-radius: 10px;">
+                        <select id="workerDeptFilter" style="padding: 10px 14px; border: 1px solid #e2e8f0; border-radius: 10px;">
+                            <option value="">All departments</option>
+                        </select>
+                        <button class="btn btn-primary" data-action="add-worker">Add Worker</button>
+                    </div>
+
+                    <div class="table-wrapper">
+                        <table id="workersTable">
+                            <thead>
+                                <tr>
+                                    <th>Name</th>
+                                    <th>Email</th>
+                                    <th>Department</th>
+                                    <th>Status</th>
+                                    <th>Availability</th>
+                                    <th>Actions</th>
+                                </tr>
+                            </thead>
+                            <tbody id="workersBody">
+                                <tr><td colspan="6" style="text-align: center;">Loading...</td></tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </section>
+
+                <!-- ISSUES SECTION -->
+                <section class="section" data-section="issues">
+                    <div style="margin-bottom: 24px; display: flex; gap: 12px;">
+                        <input type="text" id="issueSearch" placeholder="Search issues..." style="flex: 1; padding: 10px 14px; border: 1px solid #e2e8f0; border-radius: 10px;">
+                        <select id="issueStatusFilter" style="padding: 10px 14px; border: 1px solid #e2e8f0; border-radius: 10px;">
+                            <option value="">All statuses</option>
+                            <option value="reported">Reported</option>
+                            <option value="in_progress">In Progress</option>
+                            <option value="resolved">Resolved</option>
+                        </select>
+                    </div>
+
+                    <div class="table-wrapper">
+                        <table id="issuesTable">
+                            <thead>
+                                <tr>
+                                    <th>Title</th>
+                                    <th>Category</th>
+                                    <th>Assigned To</th>
+                                    <th>Status</th>
+                                    <th>Created</th>
+                                    <th>Actions</th>
+                                </tr>
+                            </thead>
+                            <tbody id="issuesBody">
+                                <tr><td colspan="6" style="text-align: center;">Loading...</td></tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </section>
+
+                <!-- DEPARTMENTS SECTION -->
+                <section class="section" data-section="departments">
+                    <button class="btn btn-primary" data-action="add-department" style="margin-bottom: 24px;">Add Department</button>
+
+                    <div class="table-wrapper">
+                        <table id="departmentsTable">
+                            <thead>
+                                <tr>
+                                    <th>Name</th>
+                                    <th>Description</th>
+                                    <th>Workers</th>
+                                    <th>Actions</th>
+                                </tr>
+                            </thead>
+                            <tbody id="departmentsBody">
+                                <tr><td colspan="4" style="text-align: center;">Loading...</td></tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </section>
+
+                <!-- SETTINGS SECTION -->
+                <section class="section" data-section="settings">
+                    <div class="card" style="padding: 32px;">
+                        <h3 style="margin-bottom: 20px;">Settings</h3>
+                        <div class="form-group">
+                            <label>Theme Preference</label>
+                            <select id="themePreference">
+                                <option value="light">Light</option>
+                                <option value="dark">Dark</option>
+                            </select>
+                        </div>
+                        <button class="btn btn-primary">Save Settings</button>
+                    </div>
+                </section>
+            </main>
+        </div>
+    </div>
+
+    <!-- MODALS -->
+    <div class="modal-backdrop" id="workerModal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3>Add/Edit Worker</h3>
+                <p>Create or update worker account details</p>
+            </div>
+            <form id="workerForm" class="grid-2">
+                <div class="form-group">
+                    <label>Name</label>
+                    <input type="text" id="workerName" required>
+                </div>
+                <div class="form-group">
+                    <label>Email</label>
+                    <input type="email" id="workerEmail" required>
+                </div>
+                <div class="form-group">
+                    <label>Phone</label>
+                    <input type="tel" id="workerPhone">
+                </div>
+                <div class="form-group">
+                    <label>Department</label>
+                    <select id="workerDept"></select>
+                </div>
+                <div class="form-actions" style="grid-column: 1/-1;">
+                    <button type="button" class="btn btn-secondary" onclick="closeModal('workerModal')">Cancel</button>
+                    <button type="submit" class="btn btn-primary">Save Worker</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <div class="modal-backdrop" id="departmentModal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3>Add/Edit Department</h3>
+                <p>Create or update department details</p>
+            </div>
+            <form id="departmentForm">
+                <div class="form-group">
+                    <label>Name</label>
+                    <input type="text" id="deptName" required>
+                </div>
+                <div class="form-group">
+                    <label>Description</label>
+                    <textarea id="deptDesc"></textarea>
+                </div>
+                <div class="form-actions">
+                    <button type="button" class="btn btn-secondary" onclick="closeModal('departmentModal')">Cancel</button>
+                    <button type="submit" class="btn btn-primary">Save Department</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <script src="renderer/app.js"></script>
 </body>
 </html>

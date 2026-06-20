@@ -1,19 +1,28 @@
-const { app, BrowserWindow } = require('electron/main')
+const { app, BrowserWindow, ipcMain } = require('electron')
 const path = require('node:path')
+const { initDatabase } = require('./db')
+const { setupIPC } = require('./ipc')
 
 function createWindow () {
   const win = new BrowserWindow({
-    width: 800,
-    height: 600,
+    width: 1400,
+    height: 900,
+    minWidth: 900,
+    minHeight: 600,
     webPreferences: {
-      preload: path.join(__dirname, 'preload.js')
+      preload: path.join(__dirname, 'preload.js'),
+      nodeIntegration: false,
+      contextIsolation: true
     }
   })
 
   win.loadFile('index.html')
+  // win.webContents.openDevTools()
 }
 
 app.whenReady().then(() => {
+  initDatabase()
+  setupIPC()
   createWindow()
 
   app.on('activate', () => {
