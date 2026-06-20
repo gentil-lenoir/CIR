@@ -1,5 +1,6 @@
-const { ipcMain } = require('electron');
-const { getDatabase } = require('./db');
+const electron = require('electron')
+const { ipcMain } = electron
+const { getDatabase } = require('./db')
 
 function setupIPC() {
   // Dashboard stats

@@ -1,16 +1,35 @@
 const Database = require('better-sqlite3');
 const path = require('node:path');
-const { app } = require('electron');
+const electron = require('electron')
+const { app } = electron
+const os = require('os');
 
 let db = null;
 
 function initDatabase() {
-  const dbPath = path.join(app.getPath('userData'), 'admin.db');
-  db = new Database(dbPath);
-  db.pragma('journal_mode = WAL');
-  
-  createTables();
-  return db;
+  try {
+    let dbPath;
+    try {
+      // Try to use app.getPath if app is ready
+      dbPath = path.join(app.getPath('userData'), 'admin.db');
+    } catch (e) {
+      // Fallback if app not ready
+      dbPath = path.join(os.homedir(), '.cis-admin', 'admin.db');
+    }
+    
+    // Ensure directory exists
+    const dir = path.dirname(dbPath);
+    require('fs').mkdirSync(dir, { recursive: true });
+    
+    db = new Database(dbPath);
+    db.pragma('journal_mode = WAL');
+    
+    createTables();
+    return db;
+  } catch (err) {
+    console.error('Database init error:', err);
+    throw err;
+  }
 }
 
 function createTables() {

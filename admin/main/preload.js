@@ -1,4 +1,5 @@
-const { contextBridge, ipcRenderer } = require('electron/renderer')
+const electron = require('electron')
+const { contextBridge, ipcRenderer } = electron
 
 contextBridge.exposeInMainWorld('electronAPI', {
   // Dashboard

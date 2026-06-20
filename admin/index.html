@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <title>CIR Admin</title>
-    <meta http-equiv="Content-Security-Policy" content="script-src 'self' 'unsafe-inline';" />
+    <meta http-equiv="Content-Security-Policy" content="script-src 'self' 'unsafe-inline'; style-src 'self' 'unsafe-inline'; connect-src 'self' http://127.0.0.1:8000;" />
     <style>
         * {
             margin: 0;
@@ -723,6 +723,30 @@
                     </div>
                 </section>
             </main>
+        </div>
+    </div>
+
+    <!-- LOGIN OVERLAY -->
+    <div class="modal-backdrop active" id="loginOverlay">
+        <div class="modal-content" style="max-width: 400px;">
+            <div class="modal-header">
+                <h3>Admin Login</h3>
+                <p>Sign in to the <strong>CIR</strong> admin dashboard</p>
+            </div>
+            <form id="loginForm">
+                <div class="form-group">
+                    <label>Email</label>
+                    <input type="email" id="loginEmail" placeholder="admin@example.com" required>
+                </div>
+                <div class="form-group">
+                    <label>Password</label>
+                    <input type="password" id="loginPassword" placeholder="Enter password" required>
+                </div>
+                <p id="loginError" style="color: #dc2626; font-size: 13px; margin-bottom: 16px; display: none;"></p>
+                <div class="form-actions">
+                    <button type="submit" class="btn btn-primary" style="width: 100%;">Sign In</button>
+                </div>
+            </form>
         </div>
     </div>
 

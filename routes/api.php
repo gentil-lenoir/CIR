@@ -71,3 +71,23 @@ Route::middleware('auth:sanctum')->group(function (): void {
 
     Route::post('/issues/{id}/upvote', [UpvoteController::class, 'store']);
 });
+
+// Admin dashboard API (internal desktop tool)
+use App\Http\Controllers\Api\AdminController;
+
+Route::prefix('admin')->group(function (): void {
+    Route::get('/stats', [AdminController::class, 'stats']);
+    Route::get('/issues', [AdminController::class, 'issues']);
+    Route::get('/issues/recent', [AdminController::class, 'recentIssues']);
+    Route::get('/workers/top', [AdminController::class, 'topWorkers']);
+
+    Route::get('/workers', [AdminController::class, 'workers']);
+    Route::post('/workers', [AdminController::class, 'storeWorker']);
+    Route::put('/workers/{id}', [AdminController::class, 'updateWorker']);
+    Route::delete('/workers/{id}', [AdminController::class, 'destroyWorker']);
+
+    Route::get('/departments', [AdminController::class, 'departments']);
+    Route::post('/departments', [AdminController::class, 'storeDepartment']);
+    Route::put('/departments/{id}', [AdminController::class, 'updateDepartment']);
+    Route::delete('/departments/{id}', [AdminController::class, 'destroyDepartment']);
+});

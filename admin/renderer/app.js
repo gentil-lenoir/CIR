@@ -1,6 +1,63 @@
+const API_BASE = 'http://127.0.0.1:8000/api/admin';
 let currentTab = 'dashboard';
 let currentWorkerId = null;
 let currentDepartmentId = null;
+
+async function api(path, options = {}) {
+    const token = localStorage.getItem('admin_token');
+    const headers = { 'Content-Type': 'application/json', 'Accept': 'application/json' };
+    if (token) {
+        headers['Authorization'] = `Bearer ${token}`;
+    }
+    const res = await fetch(`${API_BASE}${path}`, { ...options, headers: { ...headers, ...options.headers } });
+    if (res.status === 401) {
+        localStorage.removeItem('admin_token');
+        showLogin();
+        throw new Error('Unauthorized');
+    }
+    return res.json();
+}
+
+// Login
+function showLogin() {
+    document.getElementById('loginOverlay').classList.add('active');
+    document.querySelector('.container').style.display = 'none';
+}
+
+async function handleLogin(e) {
+    e.preventDefault();
+    const email = document.getElementById('loginEmail').value;
+    const password = document.getElementById('loginPassword').value;
+    const errorEl = document.getElementById('loginError');
+    try {
+        const res = await fetch('http://127.0.0.1:8000/api/login', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json', 'Accept': 'application/json' },
+            body: JSON.stringify({ email, password }),
+        });
+        const data = await res.json();
+        if (!res.ok) {
+            errorEl.style.display = 'block';
+            errorEl.textContent = data.message || 'Login failed';
+            return;
+        }
+        errorEl.style.display = 'none';
+        localStorage.setItem('admin_token', data.access_token || data.data?.token);
+        localStorage.setItem('admin_user', JSON.stringify(data.user || data.data?.user));
+        document.getElementById('loginOverlay').classList.remove('active');
+        document.querySelector('.container').style.display = '';
+        loadDashboard();
+    } catch (err) {
+        errorEl.style.display = 'block';
+        errorEl.textContent = 'Cannot connect to server at http://127.0.0.1:8000';
+    }
+}
+
+function handleLogout() {
+    localStorage.removeItem('admin_token');
+    localStorage.removeItem('admin_user');
+    showLogin();
+}
 
 // Tab navigation
 document.querySelectorAll('.sidebar-link').forEach(link => {
@@ -52,7 +109,7 @@ function updateHeader(tab) {
 // DASHBOARD
 async function loadDashboard() {
     try {
-        const statsResult = await window.electronAPI.getDashboardStats();
+        const statsResult = await api('/stats');
         if (statsResult.success) {
             const stats = statsResult.data;
             const cards = document.querySelectorAll('.stat-card');
@@ -64,7 +121,7 @@ async function loadDashboard() {
             cards[3].querySelector('.stat-value').textContent = stats.overdue_issues;
         }
 
-        const issuesResult = await window.electronAPI.getRecentIssues();
+        const issuesResult = await api('/issues/recent');
         if (issuesResult.success) {
             const container = document.getElementById('recentIssuesContainer');
             const issues = issuesResult.data;
@@ -93,7 +150,7 @@ async function loadDashboard() {
             }
         }
 
-        const workersResult = await window.electronAPI.getTopWorkers();
+        const workersResult = await api('/workers/top');
         if (workersResult.success) {
             const container = document.getElementById('topWorkersContainer');
             const workers = workersResult.data;
@@ -127,8 +184,7 @@ async function loadDashboard() {
 // WORKERS
 async function loadWorkers() {
     try {
-        // Load departments for filter
-        const deptsResult = await window.electronAPI.listDepartments();
+        const deptsResult = await api('/departments');
         if (deptsResult.success) {
             const filter = document.getElementById('workerDeptFilter');
             const deptSelect = document.getElementById('workerDept');
@@ -140,8 +196,7 @@ async function loadWorkers() {
             });
         }
 
-        // Load workers
-        const result = await window.electronAPI.listWorkers({ page: 1, limit: 50 });
+        const result = await api('/workers?page=1&limit=50');
         if (result.success) {
             const tbody = document.getElementById('workersBody');
             tbody.innerHTML = '';
@@ -172,7 +227,7 @@ async function loadWorkers() {
 }
 
 async function editWorker(id) {
-    const result = await window.electronAPI.listWorkers({ page: 1, limit: 50 });
+    const result = await api('/workers?page=1&limit=50');
     const worker = result.data.workers.find(w => w.id === id);
     if (worker) {
         currentWorkerId = id;
@@ -186,12 +241,12 @@ async function editWorker(id) {
 
 async function deleteWorker(id) {
     if (confirm('Delete this worker?')) {
-        const result = await window.electronAPI.deleteWorker(id);
+        const result = await api(`/workers/${id}`, { method: 'DELETE' });
         if (result.success) {
             alert('Worker deleted');
             loadWorkers();
         } else {
-            alert('Error: ' + result.error);
+            alert('Error: ' + (result.error || 'Unknown error'));
         }
     }
 }
@@ -199,7 +254,7 @@ async function deleteWorker(id) {
 // ISSUES
 async function loadIssues() {
     try {
-        const result = await window.electronAPI.listIssues({ page: 1, limit: 50 });
+        const result = await api('/issues?page=1&limit=50');
         if (result.success) {
             const tbody = document.getElementById('issuesBody');
             tbody.innerHTML = '';
@@ -231,7 +286,7 @@ async function loadIssues() {
 // DEPARTMENTS
 async function loadDepartments() {
     try {
-        const result = await window.electronAPI.listDepartments();
+        const result = await api('/departments');
         if (result.success) {
             const tbody = document.getElementById('departmentsBody');
             tbody.innerHTML = '';
@@ -261,18 +316,17 @@ async function loadDepartments() {
 
 function editDepartment(id) {
     currentDepartmentId = id;
-    // Fetch and populate form (simplified for now)
     openModal('departmentModal');
 }
 
 async function deleteDepartment(id) {
     if (confirm('Delete this department?')) {
-        const result = await window.electronAPI.deleteDepartment(id);
+        const result = await api(`/departments/${id}`, { method: 'DELETE' });
         if (result.success) {
             alert('Department deleted');
             loadDepartments();
         } else {
-            alert('Error: ' + result.error);
+            alert('Error: ' + (result.error || 'Unknown error'));
         }
     }
 }
@@ -297,8 +351,8 @@ document.getElementById('workerForm').addEventListener('submit', async (e) => {
     };
 
     const result = currentWorkerId
-        ? await window.electronAPI.updateWorker(currentWorkerId, worker)
-        : await window.electronAPI.createWorker(worker);
+        ? await api(`/workers/${currentWorkerId}`, { method: 'PUT', body: JSON.stringify(worker) })
+        : await api('/workers', { method: 'POST', body: JSON.stringify(worker) });
 
     if (result.success) {
         alert('Worker saved');
@@ -306,7 +360,7 @@ document.getElementById('workerForm').addEventListener('submit', async (e) => {
         loadWorkers();
         currentWorkerId = null;
     } else {
-        alert('Error: ' + result.error);
+        alert('Error: ' + (result.error || 'Unknown error'));
     }
 });
 
@@ -318,8 +372,8 @@ document.getElementById('departmentForm').addEventListener('submit', async (e) =
     };
 
     const result = currentDepartmentId
-        ? await window.electronAPI.updateDepartment(currentDepartmentId, dept)
-        : await window.electronAPI.createDepartment(dept);
+        ? await api(`/departments/${currentDepartmentId}`, { method: 'PUT', body: JSON.stringify(dept) })
+        : await api('/departments', { method: 'POST', body: JSON.stringify(dept) });
 
     if (result.success) {
         alert('Department saved');
@@ -327,7 +381,7 @@ document.getElementById('departmentForm').addEventListener('submit', async (e) =
         loadDepartments();
         currentDepartmentId = null;
     } else {
-        alert('Error: ' + result.error);
+        alert('Error: ' + (result.error || 'Unknown error'));
     }
 });
 
@@ -347,12 +401,16 @@ document.querySelectorAll('[data-action]').forEach(btn => {
     });
 });
 
+// Logout button
+document.querySelector('.sidebar-footer .user-card')?.addEventListener('click', handleLogout);
+
 // UTILITIES
 function formatStatus(status) {
-    return status.replace('_', ' ').split(' ').map(w => w.charAt(0).toUpperCase() + w.slice(1)).join(' ');
+    return status.replace(/_/g, ' ').replace(/\b\w/g, c => c.toUpperCase());
 }
 
 function formatDate(dateString) {
+    if (!dateString) return '-';
     return new Date(dateString).toLocaleDateString();
 }
 
@@ -360,5 +418,12 @@ function viewIssue(id) {
     alert('Issue view not yet implemented');
 }
 
-// Initial load
-loadDashboard();
+// INIT
+document.getElementById('loginForm').addEventListener('submit', handleLogin);
+if (localStorage.getItem('admin_token')) {
+    document.getElementById('loginOverlay').classList.remove('active');
+    document.querySelector('.container').style.display = '';
+    loadDashboard();
+} else {
+    showLogin();
+}
